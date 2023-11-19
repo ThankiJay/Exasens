@@ -1,0 +1,51 @@
+---
+title: "Clustering"
+author: "Rohan Patel"
+date: "2023-11-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+```
+
+
+```{r}
+setwd("..")
+data <- read_csv('Data/cleaned_data.csv')
+head(data)
+```
+
+## Splitting the data randomly in the ratio 0.8
+```{r} 
+set.seed(123)
+train_indices <- sample(seq_len(nrow(data)), size = 0.8 * nrow(data))
+train_data <- data[train_indices, ]
+test_data <- data[-train_indices, ]
+
+# Create x_train, y_train, x_test, y_test
+diagnosis_column_index <- which(colnames(train_data) == "Diagnosis")
+x_train <- train_data[, -diagnosis_column_index]
+y_train <- train_data[, diagnosis_column_index]
+x_test <- test_data[, -diagnosis_column_index]
+y_test <- test_data[, diagnosis_column_index]
+```
+
+
+## K Means
+```{r}
+
+```
+
+## Hirarchaial 
+```{r}
+
+```
+
+## DBSCAN
+```{r}
+
+```
+
+
