@@ -24,6 +24,12 @@ library(tidyr)
 if (!requireNamespace("ggplot2", quietly = TRUE)) {
   install.packages("ggplot2")
 }
+library(ggplot2)
+
+if (!requireNamespace("pheatmap", quietly = TRUE)) {
+  install.packages("pheatmap")
+}
+library(pheatmap)
 ```
 
 # Load necessary libraries
@@ -53,9 +59,7 @@ str(data)
 data[c('Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg')] <- lapply(data[c('Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg')], as.numeric)
 str(data)
 summary(data)
-# ggplot(data = data, aes(x = 1:nrow(data), y = is.na(data))) + geom_tile(aes(fill = is.na(data)), color = "white") + theme_minimal()
 ```
-
 # What is this Imaginary Part/Real Part?
 ```{r}
 data <- na.omit(data)
@@ -77,5 +81,6 @@ data_balanced_df <- data.frame(data_balanced$X)
 names(data_balanced_df) <- names(data)
 head(data_balanced_df)
 str(data_balanced_df)
-write.csv(data_balanced_df, 'cleaned_data.csv', row.names = FALSE)
+setwd("..")
+write.csv(data_balanced_df, 'Data/cleaned_data.csv', row.names = FALSE)
 ```
