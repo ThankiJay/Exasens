@@ -73,5 +73,5 @@ data$Diagnosis <- factor(data$Diagnosis, levels = c("Asthma", "COPD", "HC", "Inf
 # Saving Cleaned data
 ```{r}
 setwd("..")
-write.csv(data, 'Data/cleaned_data2.csv', row.names = FALSE)
+write.csv(data, 'Data/cleaned_data.csv', row.names = FALSE)
 ```
