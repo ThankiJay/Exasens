@@ -6,22 +6,166 @@ output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-if (!requireNamespace("cluster", quietly = TRUE)) {
-  install.packages("cluster")
-}
-library(cluster)
-
-if (!requireNamespace("factoextra", quietly = TRUE)) {
-  install.packages("factoextra")
-}
-library(factoextra)
-
-if (!requireNamespace("dbscan", quietly = TRUE)) {
-  install.packages("dbscan")
-}
-library(dbscan)
+#install.packages(c("tidyverse", "caTools", "ROCR", "DMwR", "caret"))
+library(tidyverse)
+library(caTools)
+library(ROCR)
+library(caret)
 ```
+
+# Importing and Preprocessing Data
+```{r}
+# Read the data
+data <- read.csv('D:/Documents/Projects/Exasens/Data/cleaned_data.csv')
+
+# Standardize the data
+scaled_data <- scale(data[, -ncol(data)])
+
+# Train-test split
+set.seed(123)  # Set seed for reproducibility
+split <- sample.split(data$Diagnosis, SplitRatio = 0.7)
+train_data <- subset(data, split == TRUE)
+test_data <- subset(data, split == FALSE)
+
+```
+
+```{r}
+
+# Support Vector Classifier (SVC)
+library(e1071)  # Ensure the e1071 package is installed
+svc_model <- svm(Diagnosis ~ ., data = train_data)
+svc_pred_class <- predict(svc_model, newdata = test_data)
+
+
+# Bagging Decision Tree
+library(randomForest)
+bagging_model <- randomForest(factor(Diagnosis) ~ ., data = train_data)
+bagging_pred_class <- predict(bagging_model, newdata = test_data)
+
+
+# Random Forest
+rf_model <- randomForest(factor(Diagnosis) ~ ., data = train_data)
+rf_pred_class <- predict(rf_model, newdata = test_data)
+
+
+# Ridge Classifier
+library(MASS)  # Ensure the MASS package is installed
+ridge_model <- lda(Diagnosis ~ ., data = train_data)
+ridge_pred_class <- predict(ridge_model, newdata = test_data)$class
+
+
+```
+
+
+
+```{r}
+# Function to print confusion matrix in a formatted table
+print_confusion_matrix <- function(confusion_matrix) {
+  cat("            Actual Positive Actual Negative\n")
+  cat("Predicted Positive      ", confusion_matrix[1, 1], "              ", confusion_matrix[1, 2], "\n")
+  cat("Predicted Negative      ", confusion_matrix[2, 1], "              ", confusion_matrix[2, 2], "\n")
+}
+
+# Function to calculate and print performance metrics with a neat table
+calculate_metrics <- function(actual, predicted, model_name) {
+  # Confusion Matrix
+  confusion_matrix <- table(actual, predicted)
+
+  cat("============================================\n")
+  cat(paste("Performance Metrics for", model_name, ":\n"))
+  cat("============================================\n")
+
+  # Print Confusion Matrix
+  cat("Confusion Matrix:\n")
+  print_confusion_matrix(confusion_matrix)
+  cat("\n")
+
+  # Accuracy
+  accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+  cat("Accuracy: ", sprintf("%.4f", accuracy), "\n")
+
+  # Precision
+  precision <- diag(confusion_matrix) / rowSums(confusion_matrix)
+  cat("Precision: ", sprintf("%.4f ", precision), "\n")
+
+  # Recall
+  recall <- diag(confusion_matrix) / colSums(confusion_matrix)
+  cat("Recall: ", sprintf("%.4f ", recall), "\n")
+
+  # F1-score
+  f1_score <- 2 * (precision * recall) / (precision + recall)
+  cat("F1-Score: ", sprintf("%.4f ", f1_score), "\n")
+
+  # AUC
+  roc_curve <- roc(as.numeric(actual), as.numeric(predicted))
+  auc <- auc(roc_curve)
+  cat("AUC: ", sprintf("%.4f", auc), "\n")
+
+  # Specificity
+  specificity <- confusion_matrix[1, 1] / sum(confusion_matrix[1, ])
+  cat("Specificity: ", sprintf("%.4f", specificity), "\n\n")
+}
+
+# Example usage
+# Calculate and print metrics for Support Vector Classifier (SVC)
+calculate_metrics(test_data$Diagnosis, svc_pred_class, "Support Vector Classifier (SVC)")
+
+# Calculate and print metrics for Bagging Decision Tree
+calculate_metrics(test_data$Diagnosis, bagging_pred_class, "Bagging Decision Tree")
+
+# Calculate and print metrics for Random Forest
+calculate_metrics(test_data$Diagnosis, rf_pred_class, "Random Forest")
+
+# Calculate and print metrics for Ridge Classifier
+calculate_metrics(test_data$Diagnosis, ridge_pred_class, "Ridge Classifier")
+
+
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
 
