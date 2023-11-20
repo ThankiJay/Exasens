@@ -1,0 +1,188 @@
+---
+title: "EDA"
+author: "Rohan Patel"
+date: "2023-11-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+if (!requireNamespace("psych", quietly = TRUE)) {
+  install.packages("psych")
+}
+library(psych)
+
+if (!requireNamespace("reshape2", quietly = TRUE)) {
+  install.packages("reshape2")
+}
+library(reshape2)
+```
+
+
+# Importing the Data
+```{r}
+setwd("..")
+data <- read_csv('Data/cleaned_data.csv')
+head(data)
+```
+
+
+# Exploring the Data
+```{r}
+pairs.panels(data)
+```
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Diagnosis), fill = as.factor(Diagnosis))) +
+  geom_bar() +
+  labs("Countplot of Diagnosis", x = "Diagnosis") +
+  scale_fill_discrete(name = "Diagnosis")
+```
+Majority of patients have COPD or are parts of Healthy control groups, data is imbalanced
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Diagnosis), fill = as.factor(Gender))) +
+  geom_bar(position = "dodge") +
+  labs("Countplot of Diagnosis with Hue Gender", x = "Diagnosis") +
+  scale_fill_discrete(name = "Gender")
+```
+More Female paitents have Asthma and Infections then males
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Gender), fill = as.factor(Gender))) +
+  geom_bar() +
+  labs("Countplot of Gender", x = "Gender") +
+  scale_fill_discrete(name = "Gender")
+```
+As always majority of paitents are males
+
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Smoking), fill = as.factor(Smoking))) +
+  geom_bar() +
+  labs("Countplot of Smoking", x = "Smoking") +
+  scale_fill_discrete(name = "Smoking")
+```
+Most paitients are ex-smokers and non smokers, a few active smokers.
+
+
+```{r}
+plot1 = ggplot(data, aes(x = Age)) +
+  geom_histogram(binwidth = 5, fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution of Age") +
+  xlab("Age")
+
+plot2 = ggplot(data, aes(x = Age)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution of Age") +
+  xlab("Age")
+
+grid.arrange(plot1, plot2, ncol = 1)
+```
+All paitents are adults, ranging from young adults in the 20's to senior citizens upto their late seventies, very few paitents in their eighties and beyond
+
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Smoking), fill = as.factor(Gender))) +
+  geom_bar(position = "dodge") +
+  labs("Countplot of Smoking with Hue Gender", x = "Smoking") +
+  scale_fill_discrete(name = "Gender")
+```
+
+
+
+```{r}
+# Disease by non smokers
+ggplot(data, aes(x = as.factor(Smoking), fill = as.factor(Diagnosis))) +
+  geom_bar(position = "dodge") +
+  labs("Countplot of Smoking with Hue Diagnosis", x = "Smoking") +
+  scale_fill_discrete(name = "Diagnosis")
+```
+Non-Smokers:
+most are healthy, rest have infections and asthma, very few with COPD
+
+Ex-Smokers:
+Majority have COPD.
+
+Active Smokers:
+Not cases with infections, most are healthy with few having asthama and COPD
+
+
+```{r}
+# Disease by non smokers
+ggplot(data, aes(x = Diagnosis, y = Age, group = Diagnosis)) +
+  geom_boxplot(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Boxplot of Age by Diagnosis") +
+  xlab("Diagnosis") +
+  ylab("Age")
+```
+COPD:
+Seen mostly in middle aged to senior citizens
+
+Asthama:
+Obsevered across almost all age groups
+
+Infections:
+Not seen in older paients beyond 50-55
+
+Healthy Groups:
+Oldest paients are upto the age of 60/65
+
+
+```{r}
+ggplot(data, aes(x = `Imaginary Part: Min`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Imaginary Part: Min") +
+  xlab("Imaginary Part: Min")
+```
+
+
+
+```{r}
+ggplot(data, aes(x = `Imaginary Part: Avg`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Imaginary Part: Avg") +
+  xlab("Imaginary Part: Avg")
+```
+
+
+
+```{r}
+ggplot(data, aes(x = `Real Part: Min`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Real Part: Min") +
+  xlab("Real Part: Min")
+```
+
+
+
+```{r}
+ggplot(data, aes(x = `Real Part: Avg`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Real Part: Avg") +
+  xlab("Real Part: Avg")
+```
+Imaginary part and real part data has a wide distribution with outlier values
+
+
+
+```{r}
+correlation_long <- melt(cor(data))
+ggplot(correlation_long, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
