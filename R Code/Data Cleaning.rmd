@@ -6,11 +6,6 @@ if (!requireNamespace("readr", quietly = TRUE)) {
 }
 library(readr)
 
-if (!requireNamespace("ROSE", quietly = TRUE)) {
-  install.packages("ROSE")
-}
-library(ROSE)
-
 if (!requireNamespace("dplyr", quietly = TRUE)) {
   install.packages("dplyr")
 }
@@ -35,7 +30,6 @@ library(pheatmap)
 # Load necessary libraries
 ```{r}
 library(readr)
-library(ROSE)
 library(dplyr)
 library(tidyr)
 library(ggplot2)
@@ -46,12 +40,14 @@ library(ggplot2)
 ```{r}
 setwd("..")
 data <- read_csv('Data/Exasens.csv')
-head(data)
-data <- data[-c(1, 2), ]
-data <- data[, -c(9:12)]
-data <- data %>% setNames(c('ID', 'Time', 'Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg', 'Diagnosis'))
+data <- data[-c(1, 2), ] #Removing Repeating and blank Headers
+data <- data[, 1:9] #Removing Extra columns at the end
+data <- data[,-2] #Removing ID Column
+data <- data %>% setNames(c('Diagnosis', 'Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg', 'Gender', 'Age', 'Smoking'))
+data <- data[, c(2:length(data), 1)]
 head(data)
 ```
+
 
 # Data Cleaning and Balancing
 ```{r}
@@ -69,18 +65,13 @@ data <- na.omit(data)
 ```{r}
 table(data$Diagnosis)
 ```
-
-# Balancing the classes using ROSE
+# Label Encoding Diagnosis
 ```{r}
-data_balanced <- ovun.sample(Diagnosis ~ ., data = data, method = "over", N = length(data$Diagnosis[data$Diagnosis == "Negative"]), seed = 123)
+data$Diagnosis <- factor(data$Diagnosis, levels = c("Asthma", "COPD", "HC", "Infected"), labels = 0:3)
 ```
 
-# Display the resampled DataFrame
+# Saving Cleaned data
 ```{r}
-data_balanced_df <- data.frame(data_balanced$X)
-names(data_balanced_df) <- names(data)
-head(data_balanced_df)
-str(data_balanced_df)
 setwd("..")
-write.csv(data_balanced_df, 'Data/cleaned_data.csv', row.names = FALSE)
+write.csv(data, 'Data/cleaned_data2.csv', row.names = FALSE)
 ```
