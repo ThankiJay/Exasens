@@ -20,9 +20,9 @@ This repository contains the code and documentation for the EAS 509 Statistical 
 The repository is organized as follows:
 
 1. **Code:**
-   - `data_cleaning.ipynb`: Jupyter Notebook containing the code for data cleaning and preprocessing.
-   - `eda.ipynb`: Jupyter Notebook for exploratory data analysis (EDA) on the Exacens dataset.
-   - `modeling.ipynb`: Jupyter Notebook with code for data modeling using various machine learning algorithms.
+   - `data_cleaning.rmd`: Jupyter Notebook containing the code for data cleaning and preprocessing.
+   - `eda.rmd`: Jupyter Notebook for exploratory data analysis (EDA) on the Exacens dataset.
+   - `modeling.rmd`: Jupyter Notebook with code for data modeling using various machine learning algorithms.
 
 2. **Data:**
    - `exacens_dataset.csv`: The Exacens dataset used for analysis.
