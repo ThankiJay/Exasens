@@ -16,7 +16,8 @@ library(caret)
 # Importing and Preprocessing Data
 ```{r}
 # Read the data
-data <- read.csv('D:/Documents/Projects/Exasens/Data/cleaned_data.csv')
+setwd("..")
+data <- read_csv('Data/cleaned_data.csv')
 
 # Standardize the data
 scaled_data <- scale(data[, -ncol(data)])
@@ -116,53 +117,4 @@ calculate_metrics(test_data$Diagnosis, rf_pred_class, "Random Forest")
 
 # Calculate and print metrics for Ridge Classifier
 calculate_metrics(test_data$Diagnosis, ridge_pred_class, "Ridge Classifier")
-
-
-
 ```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-```{r}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-

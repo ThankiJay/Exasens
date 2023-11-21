@@ -1,0 +1,464 @@
+---
+title: "Project 1"
+author: "Rohan Patel"
+date: "2023-11-21"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Install and load necessary libraries
+if (!requireNamespace("readr", quietly = TRUE)) {
+  install.packages("readr")
+}
+library(readr)
+
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+library(dplyr)
+
+if (!requireNamespace("tidyr", quietly = TRUE)) {
+  install.packages("tidyr")
+}
+library(tidyr)
+
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+if (!requireNamespace("pheatmap", quietly = TRUE)) {
+  install.packages("pheatmap")
+}
+library(pheatmap)
+
+if (!requireNamespace("psych", quietly = TRUE)) {
+  install.packages("psych")
+}
+library(psych)
+
+if (!requireNamespace("reshape2", quietly = TRUE)) {
+  install.packages("reshape2")
+}
+library(reshape2)
+
+if (!requireNamespace("cluster", quietly = TRUE)) {
+  install.packages("cluster")
+}
+library(cluster)
+
+if (!requireNamespace("factoextra", quietly = TRUE)) {
+  install.packages("factoextra")
+}
+library(factoextra)
+
+if (!requireNamespace("dbscan", quietly = TRUE)) {
+  install.packages("dbscan")
+}
+library(dbscan)
+
+if (!requireNamespace("tidyverse", quietly = TRUE)) {
+  install.packages("tidyverse")
+}
+library(tidyverse)
+
+if (!requireNamespace("caTools", quietly = TRUE)) {
+  install.packages("caTools")
+}
+library(caTools)
+
+if (!requireNamespace("ROCR", quietly = TRUE)) {
+  install.packages("ROCR")
+}
+library(ROCR)
+
+if (!requireNamespace("caret", quietly = TRUE)) {
+  install.packages("caret")
+}
+library(caret)
+
+if (!requireNamespace("gridExtra", quietly = TRUE)) {
+  install.packages("gridExtra")
+}
+library(gridExtra)
+```
+
+
+### Importing the data
+```{r}
+setwd("..")
+data <- read_csv('Data/Exasens.csv')
+data <- data[-c(1, 2), ] #Removing Repeating and blank Headers
+data <- data[, 1:9] #Removing Extra columns at the end
+data <- data[,-2] #Removing ID Column
+data <- data %>% setNames(c('Diagnosis', 'Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg', 'Gender', 'Age', 'Smoking'))
+data <- data[, c(2:length(data), 1)]
+head(data)
+```
+
+
+# Data Cleaning
+### Data Cleaning and Balancing
+```{r}
+str(data)
+data[c('Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg')] <- lapply(data[c('Imaginary Part: Min', 'Imaginary Part: Avg', 'Real Part: Min', 'Real Part: Avg')], as.numeric)
+str(data)
+summary(data)
+```
+### What is this Imaginary Part/Real Part?
+```{r}
+data <- na.omit(data)
+```
+
+### Checking for class imbalance
+```{r}
+table(data$Diagnosis)
+```
+### Label Encoding Diagnosis
+```{r}
+data$Diagnosis <- factor(data$Diagnosis, levels = c("Asthma", "COPD", "HC", "Infected"), labels = 0:3)
+```
+
+### Saving Cleaned data
+```{r}
+setwd("..")
+write.csv(data, 'Data/cleaned_data.csv', row.names = FALSE)
+```
+
+
+# EDA
+### Importing the Clean Data
+```{r}
+setwd("..")
+data <- read_csv('Data/cleaned_data.csv')
+head(data)
+```
+
+
+### Exploring the Data
+```{r}
+pairs.panels(data)
+```
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Diagnosis), fill = as.factor(Diagnosis))) +
+  geom_bar() +
+  labs("Countplot of Diagnosis", x = "Diagnosis") +
+  scale_fill_discrete(name = "Diagnosis")
+```
+Majority of patients have COPD or are parts of Healthy control groups, data is imbalanced
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Diagnosis), fill = as.factor(Gender))) +
+  geom_bar(position = "dodge") +
+  labs("Countplot of Diagnosis with Hue Gender", x = "Diagnosis") +
+  scale_fill_discrete(name = "Gender")
+```
+More Female patients have Asthma and Infections then males
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Gender), fill = as.factor(Gender))) +
+  geom_bar() +
+  labs("Countplot of Gender", x = "Gender") +
+  scale_fill_discrete(name = "Gender")
+```
+As always majority of patients are males
+
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Smoking), fill = as.factor(Smoking))) +
+  geom_bar() +
+  labs("Countplot of Smoking", x = "Smoking") +
+  scale_fill_discrete(name = "Smoking")
+```
+Most patients are ex-smokers and non smokers, a few active smokers.
+
+
+```{r}
+plot1 = ggplot(data, aes(x = Age)) +
+  geom_histogram(binwidth = 5, fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution of Age") +
+  xlab("Age")
+
+plot2 = ggplot(data, aes(x = Age)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution of Age") +
+  xlab("Age")
+
+grid.arrange(plot1, plot2, ncol = 1)
+```
+All patients are adults, ranging from young adults in the 20's to senior citizens upto their late seventies, very few paitents in their eighties and beyond
+
+
+
+```{r}
+ggplot(data, aes(x = as.factor(Smoking), fill = as.factor(Gender))) +
+  geom_bar(position = "dodge") +
+  labs("Countplot of Smoking with Hue Gender", x = "Smoking") +
+  scale_fill_discrete(name = "Gender")
+```
+
+
+
+```{r}
+# Disease by non smokers
+ggplot(data, aes(x = as.factor(Smoking), fill = as.factor(Diagnosis))) +
+  geom_bar(position = "dodge") +
+  labs("Countplot of Smoking with Hue Diagnosis", x = "Smoking") +
+  scale_fill_discrete(name = "Diagnosis")
+```
+Non-Smokers:
+most are healthy, rest have infections and asthma, very few with COPD
+
+Ex-Smokers:
+Majority have COPD.
+
+Active Smokers:
+Not cases with infections, most are healthy with few having asthama and COPD
+
+
+```{r}
+# Disease by non smokers
+ggplot(data, aes(x = Diagnosis, y = Age, group = Diagnosis)) +
+  geom_boxplot(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Boxplot of Age by Diagnosis") +
+  xlab("Diagnosis") +
+  ylab("Age")
+```
+COPD:
+Seen mostly in middle aged to senior citizens
+
+Asthama:
+Obsevered across almost all age groups
+
+Infections:
+Not seen in older paients beyond 50-55
+
+Healthy Groups:
+Oldest paients are upto the age of 60/65
+
+
+```{r}
+ggplot(data, aes(x = `Imaginary Part: Min`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Imaginary Part: Min") +
+  xlab("Imaginary Part: Min")
+```
+
+
+
+```{r}
+ggplot(data, aes(x = `Imaginary Part: Avg`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Imaginary Part: Avg") +
+  xlab("Imaginary Part: Avg")
+```
+
+
+
+```{r}
+ggplot(data, aes(x = `Real Part: Min`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Real Part: Min") +
+  xlab("Real Part: Min")
+```
+
+
+
+```{r}
+ggplot(data, aes(x = `Real Part: Avg`)) +
+  geom_density(fill = "lightblue", color = "black", alpha = 0.7) +
+  ggtitle("Distribution Plot of Real Part: Avg") +
+  xlab("Real Part: Avg")
+```
+Imaginary part and real part data has a wide distribution with outlier values
+
+
+
+```{r}
+correlation_long <- melt(cor(data))
+ggplot(correlation_long, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  scale_fill_gradient2(low = "blue", mid = "white", high = "red", midpoint = 0) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+
+
+
+# Unsupervised Modelling
+### Importing data for clustering and PCA for plotting
+```{r}
+setwd("..")
+data <- read_csv('Data/cleaned_data.csv')
+
+diagnosis_column_index <- which(colnames(data) == "Diagnosis")
+x_data = data[, -diagnosis_column_index]
+y_data = data[, diagnosis_column_index]
+# Scaling
+x_data_scaled <- scale(x_data)
+#PCA
+pca_result <- prcomp(x_data_scaled)
+variance_explained <- round((pca_result$sdev^2) / sum(pca_result$sdev^2) * 100, 2)
+```
+
+## K Means
+```{r}
+k <- 4  # number of clusters
+kmeans.fit <- kmeans(x_data_scaled, centers = k, nstart = 20)
+
+fviz_cluster(kmeans.fit, data = x_data_scaled,
+             palette = c("#2E9FDF", "#00AFBB", "#E7B800", "#792536"), 
+             geom = "point",
+             ellipse.type = "convex", 
+             ggtheme = theme_bw()
+             )
+```
+
+```{r}
+# Plotting vs actual labels
+pca_result <- prcomp(x_data_scaled)
+plot(pca_result$x[, 1], pca_result$x[, 2], col = kmeans.fit$cluster, pch = (1:4), main = "K-Means Clustering with Actual labels", xlab=paste('Dim1 [',variance_explained[1],'%]',sep = ''), ylab=paste('Dim2 [',variance_explained[2],'%]',sep = ''), xlim=c(-3,4), ylim=c(-3, 3))
+points(pca_result$x[, 1], pca_result$x[, 2], col = y_data[[1]]+10, pch = (15:18))
+legend("topleft", legend = c("Cluster 1", "Cluster 2", "Cluster 3", "Cluster 4", "Asthama", "COPD", "HC", "Infected"), col = c(1, 1), pch = c(1,2,3,4, 15,16,17,18), title = "Groups")
+
+```
+
+
+## Hirarchaial 
+```{r}
+# Perform hierarchical clustering
+hclust_result <- hclust(dist(x_data_scaled))
+
+# Plot the dendrogram
+plot(hclust_result, main = "Hierarchical Clustering Dendrogram", xlab = "Observations", sub = NULL)
+
+# Cut the tree to create clusters
+num_clusters <- 4
+clusters <- cutree(hclust_result, num_clusters)
+rect.hclust(hclust_result, k = num_clusters, border = 2:num_clusters)
+```
+
+## DBSCAN
+```{r}
+# Set the parameters for DBSCAN
+eps <- 0.5  # epsilon, the radius of the neighborhood
+minPts <- 5  # minimum number of points to form a dense region (including the point itself)
+dbscan_result <- dbscan(x_data_scaled, eps = eps, MinPts = minPts)
+
+# Visualize the clusters
+plot(x_data_scaled, col = dbscan_result$cluster + 1, pch = 20, main = "DBSCAN Clustering", xlab = "X-axis", ylab = "Y-axis")
+legend("topright", legend = unique(dbscan_result$cluster), col = unique(dbscan_result$cluster) + 1, pch = 20, title = "Clusters")
+```
+
+
+
+# Supervised Modelling
+# Importing and Preprocessing Data
+```{r}
+# Read the data
+setwd("..")
+data <- read_csv('Data/cleaned_data.csv')
+
+# Standardize the data
+scaled_data <- scale(data[, -ncol(data)])
+
+# Train-test split
+set.seed(123)  # Set seed for reproducibility
+split <- sample.split(data$Diagnosis, SplitRatio = 0.7)
+train_data <- subset(data, split == TRUE)
+test_data <- subset(data, split == FALSE)
+```
+
+```{r}
+# Support Vector Classifier (SVC)
+library(e1071)  
+svc_model <- svm(Diagnosis ~ ., data = train_data, kernel = 'radial')
+svc_pred_class <- predict(svc_model, newdata = test_data)
+
+
+# Bagging Decision Tree
+library(randomForest)
+bagging_model <- randomForest(factor(Diagnosis) ~ ., data = train_data)
+bagging_pred_class <- predict(bagging_model, newdata = test_data)
+
+
+# Random Forest
+rf_model <- randomForest(factor(Diagnosis) ~ ., data = train_data)
+rf_pred_class <- predict(rf_model, newdata = test_data)
+
+
+# Ridge Classifier
+library(MASS)  # Ensure the MASS package is installed
+ridge_model <- lda(Diagnosis ~ ., data = train_data)
+ridge_pred_class <- predict(ridge_model, newdata = test_data)$class
+```
+
+
+
+```{r}
+# Function to print confusion matrix in a formatted table
+print_confusion_matrix <- function(confusion_matrix) {
+  cat("            Actual Positive Actual Negative\n")
+  cat("Predicted Positive      ", confusion_matrix[1, 1], "              ", confusion_matrix[1, 2], "\n")
+  cat("Predicted Negative      ", confusion_matrix[2, 1], "              ", confusion_matrix[2, 2], "\n")
+}
+
+# Function to calculate and print performance metrics with a neat table
+calculate_metrics <- function(actual, predicted, model_name) {
+  # Confusion Matrix
+  confusion_matrix <- table(actual, predicted)
+
+  cat("============================================\n")
+  cat(paste("Performance Metrics for", model_name, ":\n"))
+  cat("============================================\n")
+
+  # Print Confusion Matrix
+  cat("Confusion Matrix:\n")
+  print_confusion_matrix(confusion_matrix)
+  cat("\n")
+
+  # Accuracy
+  accuracy <- sum(diag(confusion_matrix)) / sum(confusion_matrix)
+  cat("Accuracy: ", sprintf("%.4f", accuracy), "\n")
+
+  # Precision
+  precision <- diag(confusion_matrix) / rowSums(confusion_matrix)
+  cat("Precision: ", sprintf("%.4f ", precision), "\n")
+
+  # Recall
+  recall <- diag(confusion_matrix) / rowSums(confusion_matrix)
+  cat("Recall: ", sprintf("%.4f ", recall), "\n")
+  
+  # F1-score
+  f1_score <- ifelse(is.na(recall), 0, 2 * (precision * recall) / (precision + recall))
+  cat("F1-Score: ", sprintf("%.4f ", f1_score), "\n")
+
+
+  
+
+  # Specificity
+  specificity <- confusion_matrix[1, 1] / sum(confusion_matrix[1, ])
+  cat("Specificity: ", sprintf("%.4f", specificity), "\n\n")
+}
+
+# Example usage
+# Calculate and print metrics for Support Vector Classifier (SVC)
+calculate_metrics(test_data$Diagnosis, svc_pred_class, "Support Vector Classifier (SVC)")
+
+# Calculate and print metrics for Bagging Decision Tree
+calculate_metrics(test_data$Diagnosis, bagging_pred_class, "Bagging Decision Tree")
+
+# Calculate and print metrics for Random Forest
+calculate_metrics(test_data$Diagnosis, rf_pred_class, "Random Forest")
+
+# Calculate and print metrics for Ridge Classifier
+calculate_metrics(test_data$Diagnosis, ridge_pred_class, "Ridge Classifier")
+```
+
