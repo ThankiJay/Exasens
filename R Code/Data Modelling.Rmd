@@ -32,8 +32,8 @@ test_data <- subset(data, split == FALSE)
 ```{r}
 
 # Support Vector Classifier (SVC)
-library(e1071)  # Ensure the e1071 package is installed
-svc_model <- svm(Diagnosis ~ ., data = train_data)
+library(e1071)  
+svc_model <- svm(Diagnosis ~ ., data = train_data, kernel = 'radial')
 svc_pred_class <- predict(svc_model, newdata = test_data)
 
 
@@ -89,17 +89,15 @@ calculate_metrics <- function(actual, predicted, model_name) {
   cat("Precision: ", sprintf("%.4f ", precision), "\n")
 
   # Recall
-  recall <- diag(confusion_matrix) / colSums(confusion_matrix)
+  recall <- diag(confusion_matrix) / rowSums(confusion_matrix)
   cat("Recall: ", sprintf("%.4f ", recall), "\n")
-
+  
   # F1-score
-  f1_score <- 2 * (precision * recall) / (precision + recall)
+  f1_score <- ifelse(is.na(recall), 0, 2 * (precision * recall) / (precision + recall))
   cat("F1-Score: ", sprintf("%.4f ", f1_score), "\n")
 
-  # AUC
-  roc_curve <- roc(as.numeric(actual), as.numeric(predicted))
-  auc <- auc(roc_curve)
-  cat("AUC: ", sprintf("%.4f", auc), "\n")
+
+  
 
   # Specificity
   specificity <- confusion_matrix[1, 1] / sum(confusion_matrix[1, ])
