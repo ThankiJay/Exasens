@@ -1,7 +1,7 @@
 # Exacens Dataset Analysis
 
 ## Project Overview
-This repository contains the code and documentation for the EAS 509 Statistical Data Mining II Project 1, conducted by Isha Mitul Gajjar, Jay Yogesh Thanki, and Rohan Ishwarlal Patel. The project involves a comprehensive analysis of the Exacens dataset using data science techniques, including data cleaning, exploratory data analysis (EDA), and modeling.
+This repository contains the code and documentation for the EAS 509 Statistical Data Mining II Project 1, conducted by Jay Yogesh Thanki, and Rohan Ishwarlal Patel. The project involves a comprehensive analysis of the Exacens dataset using data science techniques, including data cleaning, exploratory data analysis (EDA), and modeling.
 
 ## Team Members
 
